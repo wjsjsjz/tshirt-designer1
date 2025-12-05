@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>T-Shirt Designer</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; text-align: center; background:#f4f4f4; }
+  #canvasWrap { margin: 20px auto; width: 300px; position: relative; }
+  #shirtCanvas { border:1px solid #ccc; background:white; }
+  .controls { margin-top:20px; }
+  button, input, select {
+    padding:10px;
+    margin:5px;
+    font-size:16px;
+  }
+</style>
+</head>
+<body>
+
+<h2>T-Shirt Designer</h2>
+
+<div class="controls">
+  <label>Shirt Color:</label>
+  <input type="color" id="shirtColor" value="#ffffff"><br>
+
+  <input type="text" id="userText" placeholder="Enter text">
+  <button onclick="addText()">Add Text</button><br>
+
+  <button onclick="downloadImage()">Download Design</button>
+</div>
+
+<div id="canvasWrap">
+  <canvas id="shirtCanvas" width="300" height="350"></canvas>
+</div>
+
+<script>
+const canvas = document.getElementById("shirtCanvas");
+const ctx = canvas.getContext("2d");
+
+let textItems = [];
+let dragIndex = null;
+
+// Draw T-shirt base
+function drawShirt() {
+  ctx.fillStyle = document.getElementById("shirtColor").value;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  drawTexts();
+}
+
+function addText() {
+  const text = document.getElementById("userText").value.trim();
+  if (!text) return;
+  textItems.push({ text, x: 50, y: 100 });
+  drawShirt();
+}
+
+function drawTexts() {
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  textItems.forEach(t => {
+    ctx.fillText(t.text, t.x, t.y);
+  });
+}
+
+// Drag text
+canvas.addEventListener("mousedown", e => {
+  const mx = e.offsetX;
+  const my = e.offsetY;
+  dragIndex = textItems.findIndex(t => 
+    mx > t.x && mx < t.x + t.text.length * 10 &&
+    my > t.y - 20 && my < t.y
+  );
+});
+
+canvas.addEventListener("mousemove", e => {
+  if (dragIndex !== null) {
+    textItems[dragIndex].x = e.offsetX;
+    textItems[dragIndex].y = e.offsetY;
+    drawShirt();
+  }
+});
+
+canvas.addEventListener("mouseup", () => dragIndex = null);
+
+document.getElementById("shirtColor").addEventListener("input", drawShirt);
+
+function downloadImage() {
+  const link = document.createElement("a");
+  link.download = "tshirt-design.png";
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+drawShirt();
+</script>
+</body>
+</html>
